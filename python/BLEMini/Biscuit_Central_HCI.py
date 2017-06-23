@@ -163,7 +163,7 @@ def GAP_DeviceInit( taskID, profileRole, maxScanResponses, irk, srk, signCounter
 
   buf += '\x01'                       # -Type    : 0x01 (Command)
   buf += '\x00'                 # -Opcode  : 0xFE00 (GAP_DeviceInit)
-  buf +=  '\xFE'
+  buf += '\xFE'
  
   buf += '\x26'                 # -Data Length
   buf += profileRole            #  Profile Role
@@ -320,9 +320,16 @@ def ble_event_process():
 #      print rssi
     
 #    return True
+  print ' Length', len(buf)
 
-  event = struct.unpack('H', buf[0]+buf[1])[0]
-  status = ord(buf[2]);
+  if len(buf) == 0:
+    return
+  elif len(buf) < 2:
+    event = struct.unpack('H', buf[0]+'\0')[0]
+    status = 0
+  else:
+    event = struct.unpack('H', buf[0]+buf[1])[0]
+    status = ord(buf[2]);
 
   print ' Event       : 0x%04X' % event
   print ' Status      : 0x%02X' % status
@@ -384,7 +391,7 @@ def ble_event_process():
 #
 
 if os.name == 'posix':
-  TX.port = '/dev/tty.usbmodem1431'
+  TX.port = '/dev/tty.usbserial-FT0HAD91'
 else:
   TX.port = 'COM5'
 TX.baudrate = 115200
@@ -409,6 +416,8 @@ while True:
                                      DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                      DEFAULT_DISCOVERY_WHITE_LIST )
     elif ch == 'e':
+        if found_address == None:
+            print 'donot found device'
         print 'Establish Link...'
         print 'Connecting to: ' + hex(ord(found_address[0])) + ':'  + hex(ord(found_address[1])) + ':'  + hex(ord(found_address[2])) + ':'  + hex(ord(found_address[3])) + ':'  + hex(ord(found_address[4])) + ':'  + hex(ord(found_address[5]))
 
